@@ -1,42 +1,55 @@
 import cv2
 import os
+import numpy as np
 ImgDir = os.getcwd() + '/' 
 Test_no = 44
-  
+
+
+arr = np.array([0,0])
+arry = []
+
 # Lists to store the bounding box coordinates
 top_left_corner=[]
 bottom_right_corner=[]
 top_left_corner_scale=[]
 bottom_right_corner_scale=[]
+Mouse_Move = []
+
+
 
 maxScaleUp = 100
 scaleFactor = 0
 #windowName = "Resize Image"
 trackbarValue = "Scale"
  
-# Mouse callback function
-def draw_circle(event,x,y,flags,param):
-    if event == cv2.EVENT_LBUTTONDBLCLK:
-        cv2.circle(img, (x,y), radius, (255,0,0), -1)
-        cv2.imshow("Window",image)
+# # Mouse callback function
+# def draw_circle(event,x,y,flags,param):
+#     if event == cv2.EVENT_LBUTTONDBLCLK:
+#         cv2.circle(img, (x,y), radius, (255,0,0), -1)
+#         cv2.imshow("Window",image)
         
 # function which will be called on mouse input
 def drawLine(action, x, y, flags, *userdata):
   # Referencing global variables 
-  global top_left_corner,top_left_corner_scale, bottom_right_corner,bottom_right_corner_scale, scaledImg, image
+  global top_left_corner,top_left_corner_scale, bottom_right_corner,bottom_right_corner_scale, scaledImg, image, arry, arr
   # Mark the top left corner when left mouse button is pressed
   scaleValue = cv2.getTrackbarPos('Scale', 'Window')
   scaleFactor = 1+ scaleValue/100.0
-  print(scaleValue)
+  
   cv2.displayOverlay("Window", str(1.34445))
   cv2.displayStatusBar("Window", "FFFFFF"	) 
   #cv2.circle(scaledImg, (x,y), 10, (255,0,0), -1)
   #cv2.imshow("Window",scaledImg)
-  #scaledImg = cv2.resize(image, None, fx=scaleFactor, fy = scaleFactor, interpolation = cv2.INTER_LINEAR)
+  #
 #  scaleImg = scaleImage(radius)
   if action == cv2.EVENT_LBUTTONDOWN:
     top_left_corner = [(x,y)]
     top_left_corner_scale = [(int(x/scaleFactor),int(y/scaleFactor))]
+    cv2.circle(scaledImg, (x,y), 2, (2,255,0), -1)
+    print(np.array([x,y]))
+    arry.append([x,y])
+    arr = np.array(arry)
+    #arr = np.append([arr,], axis=0)
     # When left mouse button is released, mark bottom right corner
   elif action == cv2.EVENT_LBUTTONUP:
     bottom_right_corner = [(x,y)]  
@@ -46,17 +59,25 @@ def drawLine(action, x, y, flags, *userdata):
     cv2.rectangle(scaledImg, top_left_corner[0], bottom_right_corner[0], (0,255,0),2, 8)
     cv2.imshow("Window",scaledImg)
 
+  elif action == cv2.EVENT_MOUSEMOVE:
+     Mouse_Move = [(x,y)]  
+     cv2.circle(scaledImg, (x,y), 2, (255,20,200), -1)
+     cv2.imshow("Window",scaledImg)
+     scaledImg = cv2.resize(image, None, fx=scaleFactor, fy = scaleFactor, interpolation = cv2.INTER_LINEAR)
+
 # Create the function for the trackbar since its mandatory but we wont be using it so pass.
 def scaleIt(x):
     global scaledImg
     scaledImg = scaleImage(x)
     cv2.imshow("Window",scaledImg)
+
     pass
    
 def scaleImage(value=0):
     global scaledImg
     # Get the scale factor from the trackbar 
     scaleFactor = 1+ value/100.0
+
     # Resize the image
     scaledImg = cv2.resize(image, None, fx=scaleFactor, fy = scaleFactor, interpolation = cv2.INTER_LINEAR)
     return scaledImg
@@ -81,7 +102,7 @@ cv2.setMouseCallback("Window", drawLine)
 #cv2.setMouseCallback('Window', draw_circle)
 cv2.createButton("Window",back)
 # Create trackbar and associate a callback function / create trackbars Named Radius with the range of 150 and starting position of 5.
-cv2.createTrackbar('Radius', 'Window', 0, 200, scaleIt) 
+cv2.createTrackbar('Scale', 'Window', 0, 200, scaleIt) 
 # Create trackbar and associate a callback function
 #cv2.createTrackbar(trackbarValue, windowName, scaleFactor, maxScaleUp, scaleImage)
 
@@ -95,6 +116,8 @@ while k!=113:
   cv2.imshow("Window",scaledImg)
   k = cv2.waitKey(0)
   # If c is pressed, clear the window, using the dummy image
+
+  print(arr)
   if (k == 99):
     print('reset')
     cv2.setTrackbarPos('Radius', 'Window', 0)
